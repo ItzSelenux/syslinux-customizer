@@ -1,0 +1,3 @@
+[submodule "syslinux-parser"]
+	path = syslinux-parser
+	url = git@github.com:ItzSelenux/syslinux-parser.git
