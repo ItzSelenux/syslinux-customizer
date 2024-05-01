@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 #include "syslinux-parser/syslinux-parser.h"
-int i;
 #define MAX_ENTRIES 65536
 
 GtkWidget *window,*menubar,*vbox,*listbox,*menu_file,*menuitem_file,*submenuitem_reloadconfig,
@@ -8,13 +7,15 @@ GtkWidget *window,*menubar,*vbox,*listbox,*menu_file,*menuitem_file,*submenuitem
 *submenuitem_new,*submenuitem_importentry,*submenuitem_exportentry,*submenuitem_preferences,
 *menu_help,*menuitem_help,*submenuitem_help,*submenuitem_about, *scrolledwindow, *dialog;
 
-char *syslinuxcfg, *selfcfg, *pver="0.9";
+char *syslinuxcfg, *syslinuxpath, *selfcfg, *pver="0.91";
 FILE *selffile;
 
-int parse_result,exportcontext;
+int parse_result,exportcontext,i;
 struct SYSLINUX_ENTRY entries[MAX_ENTRIES];
 
 void reset(GtkWidget *widget);
+void on_preferences(GtkWidget *button, gpointer data);
+
 void saveconfig(int exporting)
 {
 	FILE *output;
@@ -35,8 +36,6 @@ void saveconfig(int exporting)
 		{
 		exportcontext = 0;
 		}
-		for (i = exportcontext; i < entry_count; i++)
-		{
 			if (!exporting)
 			{
 				fprintf(output, "# CFG File generated with Syslinux Customizer\n", SYSLINUX_CONF_DEFAULT);
@@ -75,6 +74,8 @@ void saveconfig(int exporting)
 			}
 			fprintf(output, "\n");
 
+		for (i = exportcontext; i < entry_count; i++)
+		{
 			if (exporting)
 			{
 				i = exportcontext;
@@ -128,34 +129,59 @@ void on_newentry()
 	reset(window);
 }
 
-void getconf()
-{
-	selffile = fopen("/etc/syslinux-customizer.cfg", "r");
-	if (selffile != NULL)
-	{
+void getconf() {
+	FILE *selffile = fopen("/etc/syslinux-customizer.cfg", "r");
+	if (selffile != NULL) {
 		fseek(selffile, 0, SEEK_END);
 		long fsize = ftell(selffile);
-		fseek(selffile, 0, SEEK_SET);  
+		fseek(selffile, 0, SEEK_SET);
 
-		syslinuxcfg = malloc(fsize + 1);
-		fread(syslinuxcfg, 1, fsize, selffile);
+		char *temp_syslinuxpath = malloc(fsize + 1);
+		if (temp_syslinuxpath == NULL) {
+			fclose(selffile);
+			printf("Error: Malloc failed\n");
+			return;
+		}
+
+		size_t bytesRead = fread(temp_syslinuxpath, 1, fsize, selffile);
+		if (bytesRead != fsize) {
+			fclose(selffile);
+			free(temp_syslinuxpath);
+			printf("Error: File read error\n");
+			return;
+		}
 		fclose(selffile);
-		for (long i = fsize - 1; i >= 0; i--)
-		{
-			if (syslinuxcfg[i] == '\n')
-			{
-				syslinuxcfg[i] = '\0';
+
+		for (long i = fsize - 1; i >= 0; i--) {
+			if (temp_syslinuxpath[i] == '\n' || temp_syslinuxpath[i] == '\r') {
+				temp_syslinuxpath[i] = '\0';
 				break;
 			}
 		}
-		syslinuxcfg[fsize] = '\0';
-		g_print("custom location: %s\n", syslinuxcfg);
-	}
-	else
-	{
+
+		syslinuxpath = malloc(strlen(temp_syslinuxpath) + 1); // Asignación global
+		if (syslinuxpath == NULL) {
+			free(temp_syslinuxpath);
+			printf("Error: Malloc failed\n");
+			return;
+		}
+		strcpy(syslinuxpath, temp_syslinuxpath);
+		free(temp_syslinuxpath);
+
+		syslinuxcfg = malloc(strlen(syslinuxpath) + 14);
+		if (syslinuxcfg == NULL) {
+			free(syslinuxpath);
+			printf("Error: Malloc failed\n");
+			return;
+		}
+		snprintf(syslinuxcfg, strlen(syslinuxpath) + 14, "%s/syslinux.cfg", syslinuxpath);
+	} else {
+		syslinuxpath = "/boot/syslinux/";
 		syslinuxcfg = "/boot/syslinux/syslinux.cfg";
 	}
+	g_print("custom syslinux.cfg: %s", syslinuxcfg);
 }
+
 
 void CleanEntry(char *a, char b)
 {

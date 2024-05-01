@@ -44,6 +44,7 @@ void create_window()
 				gtk_menu_shell_append(GTK_MENU_SHELL(menu_edit), submenuitem_exportentry);
 					g_signal_connect(submenuitem_exportentry, "activate", G_CALLBACK(on_exportentry), NULL);
 				gtk_menu_shell_append(GTK_MENU_SHELL(menu_edit), submenuitem_preferences);
+					g_signal_connect(submenuitem_preferences, "activate", G_CALLBACK(on_preferences), NULL);
 
 		gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menuitem_help);
 			gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem_help), menu_help);

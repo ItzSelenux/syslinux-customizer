@@ -77,27 +77,23 @@ void on_importentry()
 
 void on_exportentry()
 {
-	char *filename = on_select_file("*.sce", "Select a SysLinux Customizer Entry (.sce)", 1);
-	if (!filename)
-	{
-		g_printerr("\033[1;31mERROR\033[0m: Selected file is NULL\n");
-		reset(window);
-		return;
-	}
-
 	GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(window));
 	if (focused_widget != NULL)
 	{
+		char *filename = on_select_file("*.sce", "Select a SysLinux Customizer Entry (.sce)", 1);
+		if (!filename)
+		{
+			g_printerr("\033[1;31mERROR\033[0m: Selected file is NULL\n");
+			reset(window);
+			return;
+		}
 		syslinuxcfg = filename;
 		const gchar *widget_name = gtk_widget_get_name(focused_widget);
 		exportcontext = atoi(widget_name);
 		saveconfig(1);
 		reset(window);
 	}
-	else
-	{
-		g_print("No hay ningún widget con foco en la ventana.\n");
-	}
+	else {}
 }
 
 void on_importexport(GtkMenuItem *menu_item, gpointer user_data)
@@ -169,6 +165,7 @@ void on_importexport(GtkMenuItem *menu_item, gpointer user_data)
 			fclose(destinationFile);
 
 			printf("Data copied from %s to %s.\n", filename, syslinuxcfg);
+			reset(window);
 		}
 		gtk_widget_destroy(warning);
 	}
