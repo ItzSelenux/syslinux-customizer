@@ -7,7 +7,7 @@ GtkWidget *window,*menubar,*vbox,*listbox,*menu_file,*menuitem_file,*submenuitem
 *submenuitem_new,*submenuitem_importentry,*submenuitem_exportentry,*submenuitem_preferences,
 *menu_help,*menuitem_help,*submenuitem_help,*submenuitem_about, *scrolledwindow, *dialog;
 
-char *syslinuxcfg, *syslinuxpath, *selfcfg, *pver="0.91";
+char *syslinuxcfg, *syslinuxpath, *selfcfg, *pver="0.92";
 FILE *selffile;
 
 int parse_result,exportcontext,i;
@@ -71,6 +71,14 @@ void saveconfig(int exporting)
 				{
 					fprintf(output, "UI menu.c32\n");
 				}
+				if (strlen(SYSLINUX_CONF_TITLE) > 0)
+				{
+					fprintf(output, "MENU TITLE %s\n", SYSLINUX_CONF_TITLE);
+				}
+				else
+				{
+					fprintf(output, "MENU TITLE Choose a system\n");
+				}
 			}
 			fprintf(output, "\n");
 
@@ -129,22 +137,26 @@ void on_newentry()
 	reset(window);
 }
 
-void getconf() {
+void getconf()
+{
 	FILE *selffile = fopen("/etc/syslinux-customizer.cfg", "r");
-	if (selffile != NULL) {
+	if (selffile != NULL)
+	{
 		fseek(selffile, 0, SEEK_END);
 		long fsize = ftell(selffile);
 		fseek(selffile, 0, SEEK_SET);
 
 		char *temp_syslinuxpath = malloc(fsize + 1);
-		if (temp_syslinuxpath == NULL) {
+		if (temp_syslinuxpath == NULL)
+		{
 			fclose(selffile);
 			printf("Error: Malloc failed\n");
 			return;
 		}
 
 		size_t bytesRead = fread(temp_syslinuxpath, 1, fsize, selffile);
-		if (bytesRead != fsize) {
+		if (bytesRead != fsize)
+		{
 			fclose(selffile);
 			free(temp_syslinuxpath);
 			printf("Error: File read error\n");
@@ -152,15 +164,18 @@ void getconf() {
 		}
 		fclose(selffile);
 
-		for (long i = fsize - 1; i >= 0; i--) {
-			if (temp_syslinuxpath[i] == '\n' || temp_syslinuxpath[i] == '\r') {
+		for (long i = fsize - 1; i >= 0; i--)
+		{
+			if (temp_syslinuxpath[i] == '\n' || temp_syslinuxpath[i] == '\r')
+			{
 				temp_syslinuxpath[i] = '\0';
 				break;
 			}
 		}
 
-		syslinuxpath = malloc(strlen(temp_syslinuxpath) + 1); // Asignación global
-		if (syslinuxpath == NULL) {
+		syslinuxpath = malloc(strlen(temp_syslinuxpath) + 1);
+		if (syslinuxpath == NULL)
+		{
 			free(temp_syslinuxpath);
 			printf("Error: Malloc failed\n");
 			return;
@@ -169,16 +184,19 @@ void getconf() {
 		free(temp_syslinuxpath);
 
 		syslinuxcfg = malloc(strlen(syslinuxpath) + 14);
-		if (syslinuxcfg == NULL) {
+		if (syslinuxcfg == NULL)
+		{
 			free(syslinuxpath);
 			printf("Error: Malloc failed\n");
 			return;
 		}
 		snprintf(syslinuxcfg, strlen(syslinuxpath) + 14, "%s/syslinux.cfg", syslinuxpath);
-	} else {
-		syslinuxpath = "/boot/syslinux/";
-		syslinuxcfg = "/boot/syslinux/syslinux.cfg";
-	}
+		}
+		else
+		{
+			syslinuxpath = "/boot/syslinux/";
+			syslinuxcfg = "/boot/syslinux/syslinux.cfg";
+		}
 	g_print("custom syslinux.cfg: %s", syslinuxcfg);
 }
 
