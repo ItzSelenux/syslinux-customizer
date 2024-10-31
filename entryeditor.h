@@ -1,13 +1,4 @@
-GtkWidget *label_clabel, *label_cmenulabel, *label_ccommand, *label_cappend, *label_ccom32, *label_cinitrd,
-	*entry_clabel, *entry_cmenulabel, *entry_ccommand, *entry_cappend, *entry_ccom32, *entry_cinitrd, *grid,
-	*btn_cancel, *btn_save, *label_notice;
-
-void on_btn_cancel_clicked(GtkWidget *widget, gpointer data)
-{
-	gtk_widget_destroy(GTK_WIDGET(data));
-}
-
-void on_btn_save_clicked()
+void on_btn_save_clicked(void)
 {
 	const gchar *nlabel = gtk_entry_get_text(GTK_ENTRY(entry_clabel));
 	const gchar *nmenulabel = gtk_entry_get_text(GTK_ENTRY(entry_cmenulabel));
@@ -24,17 +15,26 @@ void on_btn_save_clicked()
 	strcpy(entries[i].com32, ncom32);
 
 	saveconfig(0);
-	reset(window);
+	reset(window, 1);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
+void CleanEntry(char *a, char b)
+{
+	char *ptr = a;
+	while ((ptr = strchr(ptr, b)) != NULL)
+	{
+		memmove(ptr, ptr + 1, strlen(ptr));
+	}
 }
 
 void on_edit_button_clicked(GtkWidget *button, gpointer data)
 {
-	char clabel[MAX_LINE_LENGTH],cmenulabel[MAX_LINE_LENGTH],ccommand[MAX_LINE_LENGTH],
-		cappend[MAX_LINE_LENGTH],ccom32[MAX_LINE_LENGTH],cinitrd[MAX_LINE_LENGTH];
+	char clabel[ML],cmenulabel[ML],ccommand[ML],
+		cappend[ML],ccom32[ML],cinitrd[ML];
 	const gchar *widget_name = gtk_widget_get_name(button);
 
-	sscanf(widget_name, "|%d|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|",
+	sscanf(widget_name, "|%d|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|",
 		&i, clabel, cmenulabel, ccommand, cappend, ccom32, cinitrd);
 
 	CleanEntry(clabel, '!');CleanEntry(cmenulabel, '!');CleanEntry(ccommand, '!');
@@ -46,7 +46,7 @@ void on_edit_button_clicked(GtkWidget *button, gpointer data)
 	// EDIT WINDOW
 	gtk_init(NULL, NULL);
 		dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		char title[MAX_LINE_LENGTH];
+		char title[ML*2];
 		sprintf(title, "%s - Syslinux Customizer", cmenulabel);
 		gtk_window_set_title(GTK_WINDOW(dialog), title);
 		g_signal_connect(dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);

@@ -1,7 +1,35 @@
-void create_window()
+void on_about(GtkMenuItem *menuitem, gpointer userdata)
 {
+	dialog = gtk_about_dialog_new();
+	window_set_icon(GTK_WINDOW(dialog), program_icon);
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), "Syslinux-customizer");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "Copyright © 2024 ItsZariep");
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "Syslinux config editor");
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), pver);
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://itzselenux.github.io/syslinux-customizer");
+	gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "Project WebSite");
+	gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dialog),GTK_LICENSE_GPL_3_0);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), program_icon);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
+void create_window(void)
+{
+	program_icon_names = g_ptr_array_new();
+	g_ptr_array_add(program_icon_names, "syslinux-customizer");
+	g_ptr_array_add(program_icon_names, "grub-customizer");
+	g_ptr_array_add(program_icon_names, "menu-editor");
+	g_ptr_array_add(program_icon_names, "kmenuedit");
+	g_ptr_array_add(program_icon_names, "gnome-menu");
+	g_ptr_array_add(program_icon_names, "system-run");
+	program_icon = probe_icons_from_theme(program_icon_names);
+
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title(GTK_WINDOW(window), "Syslinux customizer");
+		window_set_icon(GTK_WINDOW(window), program_icon);
+		gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 		gtk_widget_set_size_request(window, 333, 333);
 		gtk_container_set_border_width(GTK_CONTAINER(window), 1);
 		g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -48,11 +76,8 @@ void create_window()
 
 		gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menuitem_help);
 			gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem_help), menu_help);
-				//gtk_menu_shell_append(GTK_MENU_SHELL(menu_help), submenuitem_help);
-					//g_signal_connect(submenuitem_about, "activate", G_CALLBACK(on_about), window);
 				gtk_menu_shell_append(GTK_MENU_SHELL(menu_help), submenuitem_about);
 					g_signal_connect(submenuitem_about, "activate", G_CALLBACK(on_about), window);
-
 
 			vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -65,11 +90,9 @@ void create_window()
 			gtk_widget_set_vexpand(scrolledwindow, TRUE);
 			gtk_container_add(GTK_CONTAINER(scrolledwindow), listbox);
 			gtk_container_add(GTK_CONTAINER(vbox), scrolledwindow);
-
-			
 }
 
-void load_entries()
+void load_entries(void)
 {
 	for (i = 0; i < entry_count; ++i)
 	{
@@ -82,7 +105,7 @@ void load_entries()
 		GtkWidget *label = gtk_label_new(entries[i].menulabel);
 
 		GtkWidget *edit_button = gtk_button_new_with_label("edit");
-		char buffer[MAX_LINE_LENGTH * 6];
+		char buffer[ML * 7];
 		sprintf(buffer, "|%d|!%s|!%s|!%s|!%s|!%s|!%s|", i,
 			entries[i].label, entries[i].menulabel, entries[i].command,
 			entries[i].append, entries[i].com32, entries[i].initrd);
@@ -101,13 +124,13 @@ void load_entries()
 	}
 }
 
-void windowinit()
+void windowinit(void)
 {
 	create_window();
 	load_entries();
 }
 
-void reset(GtkWidget *widget)
+void reset(GtkWidget *widget, gint init)
 {
 	GList *children = gtk_container_get_children(GTK_CONTAINER(listbox));
 	for (GList *iter = children; iter != NULL; iter = g_list_next(iter))

@@ -1,11 +1,8 @@
 #include "syslinux-customizer.h"
-#include "importexport.h"
-#include "entryeditor.h"
-#include "mainwindow.h"
-#include "settings.h"
 
 int main(int argc, char *argv[])
 {
+	home_dir = getenv("HOME");
 	getconf();
 	parse_syslinux_config(syslinuxcfg, entries);
 	gtk_init(&argc, &argv);

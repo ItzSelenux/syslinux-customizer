@@ -2,7 +2,7 @@
 Name=Syslinux Customizer
 Comment=Customize the syslinux bootloader
 Exec=pkexec syslinux-customizer
-Icon=kmenuedit
+Icon=grub-customizer
 Type=Application
 Categories=System;Settings;
 Keywords=syslinux;bootloader;configuration;settings;menu;

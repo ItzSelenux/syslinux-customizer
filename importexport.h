@@ -12,7 +12,8 @@ char *on_select_file(const char *filetype, const char *title, int save_dialog)
 		save_dialog ? "_Save" : "_Open",
 		GTK_RESPONSE_ACCEPT,
 		NULL);
-
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+	window_set_icon(GTK_WINDOW(dialog), program_icon);
 	GtkFileFilter *filter = gtk_file_filter_new();
 	gtk_file_filter_add_pattern(filter, filetype);
 	gtk_file_filter_set_name(filter, "SysLinux Customizer Entry (*.sce)");
@@ -38,13 +39,13 @@ char *on_select_file(const char *filetype, const char *title, int save_dialog)
 	return filename;
 }
 
-void on_importentry()
+void on_importentry(void)
 {
 	char *filename = on_select_file("*.sce", "Select a SysLinux Customizer Entry (.sce)", 0);
 	if (!filename)
 	{
 		g_printerr("\033[1;31mERROR\033[0m: Selected file is NULL\n");
-		reset(window);
+		reset(window, 1);
 		return;
 	}
 
@@ -75,7 +76,7 @@ void on_importentry()
 	fclose(destinationFile);
 }
 
-void on_exportentry()
+void on_exportentry(void)
 {
 	GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(window));
 	if (focused_widget != NULL)
@@ -84,14 +85,14 @@ void on_exportentry()
 		if (!filename)
 		{
 			g_printerr("\033[1;31mERROR\033[0m: Selected file is NULL\n");
-			reset(window);
+			reset(window, 1);
 			return;
 		}
 		syslinuxcfg = filename;
 		const gchar *widget_name = gtk_widget_get_name(focused_widget);
 		exportcontext = atoi(widget_name);
 		saveconfig(1);
-		reset(window);
+		reset(window, 1);
 	}
 	else {}
 }
@@ -104,7 +105,7 @@ void on_importexport(GtkMenuItem *menu_item, gpointer user_data)
 	if (!filename)
 	{
 		g_printerr("\033[1;31mERROR\033[0m: Selected file is NULL\n");
-		reset(window);
+		reset(window, 1);
 		return;
 	}
 
@@ -165,7 +166,7 @@ void on_importexport(GtkMenuItem *menu_item, gpointer user_data)
 			fclose(destinationFile);
 
 			printf("Data copied from %s to %s.\n", filename, syslinuxcfg);
-			reset(window);
+			reset(window, 1);
 		}
 		gtk_widget_destroy(warning);
 	}
